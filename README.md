@@ -12,3 +12,26 @@ Linux技术进阶示意图 ： https://blog.csdn.net/tyuuhgf/article/details/864
 Linux页面缓存、回收、交换基本概念 ：http://3ms.huawei.com/km/blogs/details/5800933?moduleId=
 
 百度看到的比较好的Android源码学习路径 ：http://3ms.huawei.com/km/blogs/details/5849097?moduleId=
+
+
+
+*******************************************git********************************************************
+1.本地建仓
+  本地目录下执行
+  $git init
+  执行如下命令生成SSH Key，按回车键默认配置执行
+  $ssh-keygen -t rsa -C "自己的邮箱"
+  将生成的SSH Key加到github上去
+  ~/.ssh/id_rsa.pub  (该文件所有内容都赋值到github的添加ssh-key里面去)
+  执行如下命令，设置提交代码人的基本信息（为提交做准备）
+  $git config --global user.email "你的邮箱"
+  $git config --global user.name "自定义名"
+  
+2.提交代码
+  第一次建仓，需要先拉一份库上的代码
+  $git pull git@github.com:pangyiwen/pyw_study.git
+  开始提交代码
+  git status
+  git add test.txt
+  git commit -s
+  git push origin master
