@@ -11,9 +11,7 @@ include base.mk
 #**********************************************************#
 
 $(warning,"sdk_Mekefile  start")
-
-#make -f $(PWD)/source/makefile
-echo '123'
+#make -C $(PWD)/source
 $(warning,"sdk_Mekefile  end")
 
 

@@ -3,9 +3,9 @@
 
 $(warning,"source_Makefile start")
 
-make -f $(PWD)/process/Makefile
+make -C $(PWD)/process
 
-make -f $(PWD)/system/Makefile
+make -C $(PWD)/system
 
 $(warning,"source_Makefile end")
 
