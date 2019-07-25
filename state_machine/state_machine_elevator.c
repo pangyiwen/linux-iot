@@ -20,15 +20,15 @@ typedef enum
 
 typedef struct elevator_state_table_s
 {
-    unint32 cru_state;       //open or  close
-    unint32 next_state;      //run  or  stop
+    unint32 door_state;       //open or  close
+    unint32 cru_state;      //run  or  stop
     //int (*elevator_operation)(elevator* elevator,OPRERATE_E operate);
 }elevator_state_table;
 
 typedef struct elevator_s
 {
-    elevator_state_table_s *elevator_state_table;
-    unint32 cru_state;      //open  or  close
+    elevator_state_table *elevator_state_table;
+    unint32 cru_state;      //run  or  stop
 }elevator;
 
 /*TODO: Reserved for complex need
@@ -44,15 +44,14 @@ int elevator_working(elevator* elevator,OPRERATE_E operate)
 int elevator_operation(elevator* elevator,OPRERATE_E operate)
 {
     if(elevator == NULL) {
-        printf("[error] the pts is null\n")
+        printf("[error] the pts is null\n");
     }
      switch(operate) {
         case STATE_RUN:
-             if ((elevator.elevator_state_table->cru_state == STATE_CLOSE) &&
-                (elevator->next_state == STATE_STOP)) {
+             if ((elevator->elevator_state_table->door_state == STATE_CLOSE) &&
+                (elevator->cru_state == STATE_STOP)) {
                     elevator->cru_state = STATE_RUN;
-                    elevator.elevator_state_table->cru_state = STATE_CLOSE;
-                    elevator.elevator_state_table->next_state = STATE_RUN;
+                    elevator->elevator_state_table->cru_state = STATE_RUN;
                     printf("[OK] run SUCCESS\n");
                     return SUCCESS;
                 } else {
@@ -61,9 +60,9 @@ int elevator_operation(elevator* elevator,OPRERATE_E operate)
                 }
 
         case STATE_STOP:
-            if (elevator->next_state == STATE_RUN) {
+            if (elevator->cru_state == STATE_RUN) {
                     elevator->cru_state = STATE_STOP;
-                    elevator.elevator_state_table->next_state = STATE_STOP;
+                    elevator->elevator_state_table->cru_state = STATE_STOP;
                     printf("[OK] stop SUCCESS\n");
                     return SUCCESS;
                 } else {
@@ -72,9 +71,9 @@ int elevator_operation(elevator* elevator,OPRERATE_E operate)
                 }
 
         case STATE_CLOSE:
-            if ((elevator.elevator_state_table->cru_state == STATE_OPEN) &&
-                (elevator->next_state == STATE_STOP)) {
-                    elevator.elevator_state_table->cru_state = STATE_CLOSE;
+            if ((elevator->elevator_state_table->door_state == STATE_OPEN) &&
+                (elevator->cru_state == STATE_STOP)) {
+                    elevator->elevator_state_table->door_state = STATE_CLOSE;
                     printf("[OK] open SUCCESS\n");
                     return SUCCESS;
                 } else {
@@ -83,9 +82,9 @@ int elevator_operation(elevator* elevator,OPRERATE_E operate)
                 }
 
         case STATE_OPEN:
-            if ((elevator.elevator_state_table->cru_state == STATE_CLOSE) &&
-                (elevator->next_state == STATE_STOP)) {
-                    elevator.elevator_state_table->cru_state = STATE_OPEN;
+            if ((elevator->elevator_state_table->door_state == STATE_CLOSE) &&
+                (elevator->cru_state == STATE_STOP)) {
+                    elevator->elevator_state_table->door_state = STATE_OPEN;
                     printf("[OK] open SUCCESS\n");
                     return SUCCESS;
                 } else {
@@ -100,9 +99,19 @@ int elevator_operation(elevator* elevator,OPRERATE_E operate)
 
 int elevator_init(elevator* elevator)
 {
-    elevator->cru_state = STATE_CLOSE;
-    elevator.elevator_state_table->cru_state = STATE_CLOSE;
-    elevator.elevator_state_table->next_state = STATE_STOP;
+    elevator->cru_state = STATE_STOP;
+    elevator->elevator_state_table->door_state = STATE_CLOSE;
+    elevator->elevator_state_table->cru_state = STATE_STOP;
+
+    return SUCCESS;
+}
+
+int main()
+{
+    elevator* elevator;
+
+    elevator = malloc(sizeof(elevator));
+    elevator_init(elevator);
 
     return SUCCESS;
 }
