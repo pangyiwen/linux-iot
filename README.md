@@ -24,7 +24,7 @@ Linux技术进阶示意图 ： https://blog.csdn.net/tyuuhgf/article/details/864
   
 2.提交代码
   第一次建仓，需要先拉一份库上的代码
-  $git pull git@github.com:pangyiwen/pyw_study.git
+  $git pull git@github.com:pangyiwen/linux-iot.git
   开始提交代码
   git status
   git add test.txt
