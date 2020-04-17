@@ -1,5 +1,5 @@
-# pyw_study
-to collect something about studying on Linux
+# Linux-iot
+Just to do it, iot in Linux ！
 
 testing:
 
