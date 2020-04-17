@@ -10,7 +10,7 @@ Linux Input子系统 ：http://www.360doc.com/content/13/0507/15/496343_28362827
 Linux技术进阶示意图 ： https://blog.csdn.net/tyuuhgf/article/details/86483321
 
 
-*******************************************git********************************************************
+>git
 1.本地建仓
   本地目录下执行
   $git init
