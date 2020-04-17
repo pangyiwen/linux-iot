@@ -1,5 +1,5 @@
 #!/bin/bash
 
-git pull git@github.com:pangyiwen/pyw_study.git
+git pull git@github.com:pangyiwen/linux-iot.git
 
 echo git pull  SUCCESS !!
