@@ -1,20 +1,25 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <pthread.h>
 
 #include "linked_list.h"
+#include "list_interface_test.h"
 /**
  * Sets a list structure to empty - all null values.
  * warning: Does not remove any items from the list.
  * @param newl a pointer to the list structure to be initialized
  */
 void list_zero(LIST* newl)
-{
+{	
+	pthread_mutex_lock(&newl->list_mutex);
 	memset(newl, 0, sizeof(LIST));
-	newl->first = NULL;
+	/*newl->first = NULL;
 	newl->last = NULL;
 	newl->current = NULL;
-	newl->count = newl->size = 0;
+	newl->count = newl->size = 0;*/
+	pthread_mutex_unlock(&newl->list_mutex);
 }
 
 /**
@@ -24,6 +29,7 @@ void list_zero(LIST* newl)
 LIST* list_init(void)
 {
 	LIST* newl = malloc(sizeof(LIST));
+	pthread_mutex_init(&newl->list_mutex, NULL);
 	list_zero(newl);
 	return newl;
 }
@@ -41,13 +47,14 @@ void list_append(LIST* alist, void* content, size_t size)
 	newl->content = content;
 	newl->next = NULL;
 	newl->prev = alist->last;
+
 	if (alist->first == NULL)
 		alist->first = newl;
 	else
 		alist->last->next = newl;
 	alist->last = newl;
 	++(alist->count);
-	alist->size +=size;
+	alist->size += size;
 }
 
 void list_insert(LIST* alist, void* content, size_t size, LIST_ELEMENT_S* index)
@@ -63,8 +70,6 @@ void list_insert(LIST* alist, void* content, size_t size, LIST_ELEMENT_S* index)
 		else
 			alist->last->next = newl;
 		alist->last = newl;
-		++(alist->count);
-		alist->size +=size;
 	} else {
 		newl->content = content;
 		newl->next = index;
@@ -75,11 +80,9 @@ void list_insert(LIST* alist, void* content, size_t size, LIST_ELEMENT_S* index)
 			newl->prev->next = newl;
 		else
 			alist->first = newl;
-
+	} 
 		++(alist->count);
 		alist->size += size;
-	} 
-
 }
 
 LIST_ELEMENT_S* list_next_element(LIST* alist, LIST_ELEMENT_S** pos)
@@ -169,51 +172,68 @@ int list_unlink_item(LIST* alist, void* content, int(*callback)(void*, void*), i
 	else
 		alist->current = saved;
 	--(alist->count);
-	
+	alist->size -= sizeof(content);
 	return 1;/*successfully removed item*/
 }
 
-//printf("%d/%s---------------\n", __LINE__, __FUNCTION__);
-int main(void)
+/**
+ * Removes but does not free the last item in a list.
+ * @param alist the list from which the item is to be removed
+ * @return the last item removed (or NULL if none was)
+ */
+void* list_pop_tail(LIST* alist)
 {
-	/*
-	void list_zero(LIST* newl);
-	LIST* list_init(void);
-	void list_append(LIST* alist, void* content, size_t size);
-	void list_insert(LIST* alist, void* content, size_t size, LIST_ELEMENT_S* index);
-	*/
-	LIST* test_list = NULL;
-	int content01 = 10;
-	int content02 = 20;
-	int content03 = 30;
-	int content04 = 40;
-	int content05 = 50;
-	int content06 = 60;
-	int content00 = 100;
-	LIST_ELEMENT_S* inserted_list = NULL;
+	void* content = NULL;
+	if (alist->count>0) {
+		LIST_ELEMENT_S* last = alist->last;
+		if (alist->current == last)
+			alist->current = last->prev;
+		if (alist->first == last)
+			alist->first = NULL;
+		content = last->content;
+		alist->last = alist->last->prev;
+		if (alist->last)
+			alist->last->next = NULL;
 
-	test_list = list_init();
-	list_zero(test_list);
-
-	list_append(test_list, &content01, sizeof(int));
-	list_append(test_list, &content02, sizeof(int));
-	list_append(test_list, &content03, sizeof(int));
-	list_append(test_list, &content04, sizeof(int));
-	list_append(test_list, &content05, sizeof(int));
-	list_append(test_list, &content06, sizeof(int));
-
-	test_list->current = test_list->first;
-	inserted_list = list_find_item(test_list, &content05, NULL);
-	list_insert(test_list, &content00, sizeof(int),inserted_list);
-	list_unlink_item(test_list, &content05, NULL, 0);
-
-	test_list->current = test_list->first;
-
-	printf("count:%d  size: %ld\n", test_list->count, test_list->size);
-	while (test_list->current != NULL) {
-		printf("content : %d \n", *(int *)test_list->current->content);
-		test_list->current = test_list->current->next;
+		free(last);
+		alist->size -= strlen(content);
+		--(alist->count);
 	}
-
-	return 0;
+	return content;
 }
+
+/**
+ * Removes and frees all items in a list, leaving the list ready for new items.
+ * @param alist the list to which the operation is to be applied
+ */
+void list_empty(LIST* alist)
+{
+	while (alist->first != NULL) {
+		LIST_ELEMENT_S* first = alist->first;
+		if (first->content != NULL) {
+			free(first->content);
+			first->content = NULL;
+		}
+		alist->first = first->next;
+		free(first);
+	}
+	alist->count = 0;
+	alist->size = 0;
+	alist->current = alist->first = alist->last = NULL;
+}
+
+/**
+ * Removes and frees all items in a list, and frees the list itself
+ * @param alist the list to which the operation is to be applied
+ */
+void list_free(LIST* alist)
+{
+	list_empty(alist);
+	free(alist);
+}
+
+void main(void)
+{
+	test();
+}
+
